@@ -2,6 +2,7 @@ package com.shopit.shopit.domain.user.service;
 
 import com.shopit.shopit.domain.user.entity.User;
 import com.shopit.shopit.domain.user.exception.DuplicateEmailException;
+import com.shopit.shopit.domain.user.exception.UserNotFoundException;
 import com.shopit.shopit.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,5 +32,10 @@ public class UserService {
         );
         userRepository.save(user);
         return user.getId();
+    }
+
+    public User getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
     }
 }
