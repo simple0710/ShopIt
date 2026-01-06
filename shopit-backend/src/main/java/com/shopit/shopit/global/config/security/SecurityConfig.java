@@ -1,5 +1,6 @@
 package com.shopit.shopit.global.config.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,9 +8,13 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -29,9 +34,27 @@ public class SecurityConfig {
 
                 // 로그인 페이지 비활성화 / 모든 요청 허용 예시
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll() // 인증 없이 API 접근 허용
-                        .anyRequest().authenticated()              // 그 외 요청은 인증 필요
+                        // 인증 없이 접근
+                        .requestMatchers(
+                                "/**",
+                                "/users/**",
+                                "/auth/login"
+                        ).permitAll()
+
+                        // USER 전용
+                        .requestMatchers(
+                                "/auth/logout"
+
+                        ).hasRole("USER")
+
+                        // 그 외의 요청
+                        .anyRequest().authenticated()
                 )
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class)
+
+
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin) // H2 콘솔사용
                 )
@@ -40,7 +63,8 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
 
                 // HTTP Basic 사용 (선택)
-                .httpBasic(httpBasic -> httpBasic.disable());
+                .httpBasic(httpBasic -> httpBasic.disable()
+            );
 
         return http.build();
     }
