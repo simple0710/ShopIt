@@ -7,11 +7,11 @@ import com.shopit.shopit.domain.auth.dto.response.LoginResponse;
 import com.shopit.shopit.domain.auth.service.AuthService;
 import com.shopit.shopit.global.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginRequest request) {
@@ -34,5 +35,15 @@ public class AuthController {
         return ResponseEntity.ok(
                 ApiResponse.success(new AccessTokenResponse(newAccessToken))
         );
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (Long) auth.getPrincipal();
+
+        authService.logout(userId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

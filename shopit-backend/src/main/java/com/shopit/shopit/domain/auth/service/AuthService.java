@@ -41,6 +41,11 @@ public class AuthService {
         return new LoginResponse(accessToken, refreshToken);
     }
 
+    public void logout(Long userId) {
+        String key = "refreshToken:" + userId;
+        redisTemplate.delete(key);
+    }
+
     // RefreshToken으로 AccessToken 재발급
     public String refreshAccessToken(Long userId, String refreshToken) {
         String key = "refreshToken:" + userId;
