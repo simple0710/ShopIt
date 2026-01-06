@@ -61,3 +61,5 @@ out/
 # ====================
 .DS_Store
 Thumbs.db
+
+application-secret.yaml

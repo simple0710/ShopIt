@@ -1,4 +1,4 @@
-package com.shopit.shopit.global.config;
+package com.shopit.shopit.global.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
