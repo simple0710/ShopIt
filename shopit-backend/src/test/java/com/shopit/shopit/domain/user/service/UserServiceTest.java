@@ -1,5 +1,6 @@
 package com.shopit.shopit.domain.user.service;
 
+import com.shopit.shopit.domain.user.dto.request.UpdateProfileRequest;
 import com.shopit.shopit.domain.user.entity.User;
 import com.shopit.shopit.domain.user.exception.DuplicateEmailException;
 import com.shopit.shopit.domain.user.exception.UserNotFoundException;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -56,6 +58,39 @@ public class UserServiceTest {
 
         // when & then
         assertThatThrownBy(() -> userService.getUser(userId))
+                .isInstanceOf(UserNotFoundException.class);
+    }
+
+    // updateProfile
+    @Test
+    void 회원정보_수정_성공() {
+        // given
+        Long userId = 1L;
+        String email = "test@test.com";
+        String newName = "newName";
+
+        User user = User.create(email, "pw", "oldName");
+        UpdateProfileRequest request = new UpdateProfileRequest(newName);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+        // when
+        userService.updateProfile(userId, request);
+
+        // then
+        assertThat(user.getName()).isEqualTo(newName);
+    }
+
+    @Test
+    void 회원정보_수정_사용자없음_예외() {
+        // given
+        Long userId = 1L;
+
+        given(userRepository.findById(userId)).willReturn(Optional.empty());
+        UpdateProfileRequest request = new UpdateProfileRequest("newName");
+
+        // when & then
+        assertThatThrownBy(() -> userService.updateProfile(userId, request))
                 .isInstanceOf(UserNotFoundException.class);
     }
 }
