@@ -1,9 +1,12 @@
 package com.shopit.shopit.domain.user.service;
 
+import com.shopit.shopit.domain.user.dto.request.UpdateProfileRequest;
+import com.shopit.shopit.domain.user.dto.response.UserProfileResponse;
 import com.shopit.shopit.domain.user.entity.User;
 import com.shopit.shopit.domain.user.exception.DuplicateEmailException;
 import com.shopit.shopit.domain.user.exception.UserNotFoundException;
 import com.shopit.shopit.domain.user.repository.UserRepository;
+import com.shopit.shopit.domain.user.vo.UserProfile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,5 +40,19 @@ public class UserService {
     public User getUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    @Transactional
+    public UserProfileResponse updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        UserProfile profile = new UserProfile(
+                request.getName()
+        );
+
+        user.updateProfile(profile);
+
+        return UserProfileResponse.from(user);
     }
 }

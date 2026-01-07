@@ -1,5 +1,6 @@
 package com.shopit.shopit.domain.user.controller;
 
+import com.shopit.shopit.domain.user.dto.request.UpdateProfileRequest;
 import com.shopit.shopit.domain.user.dto.request.UserRegisterRequest;
 import com.shopit.shopit.domain.user.dto.response.UserProfileResponse;
 import com.shopit.shopit.domain.user.dto.response.UserRegisterResponse;
@@ -8,6 +9,8 @@ import com.shopit.shopit.domain.user.service.UserService;
 import com.shopit.shopit.global.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -50,6 +53,18 @@ public class UserController {
         User user = userService.getUser(userId);
         return ResponseEntity.ok(
                 ApiResponse.success(UserProfileResponse.from(user))
+        );
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> updateMyInfo(
+            @RequestBody UpdateProfileRequest request
+    ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = (Long) auth.getPrincipal();
+
+        return ResponseEntity.ok(
+                ApiResponse.success(userService.updateProfile(userId, request))
         );
     }
 }

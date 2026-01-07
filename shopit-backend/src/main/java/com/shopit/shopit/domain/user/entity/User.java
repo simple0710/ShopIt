@@ -1,5 +1,6 @@
 package com.shopit.shopit.domain.user.entity;
 
+import com.shopit.shopit.domain.user.vo.UserProfile;
 import com.shopit.shopit.type.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -51,5 +52,13 @@ public class User {
         user.name = name;
         user.role = UserRole.USER;
         return user;
+    }
+
+    public void updateProfile(UserProfile profile) {
+        this.name = profile.name();
+    }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
     }
 }
