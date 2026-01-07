@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -95,5 +96,19 @@ public class AuthServiceTest {
         // when & then
         assertThatThrownBy(() -> authService.login(email, rawPassword))
                 .isInstanceOf(InvalidCredentialsException.class);
+    }
+
+    // logout
+    @Test
+    public void 로그아웃_성공() {
+        // given
+        Long userId = 1L;
+        String key = "refreshToken:"+userId;
+
+        // when
+        authService.logout(userId);
+
+        // then
+        verify(redisTemplate).delete(key);
     }
 }
