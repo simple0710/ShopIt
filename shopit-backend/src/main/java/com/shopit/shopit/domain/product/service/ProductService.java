@@ -2,13 +2,15 @@ package com.shopit.shopit.domain.product.service;
 
 import com.shopit.shopit.domain.product.dto.request.CreateProductRequest;
 import com.shopit.shopit.domain.product.dto.response.CreateProductResponse;
-import com.shopit.shopit.domain.product.entity.Inventory;
+import com.shopit.shopit.domain.product.dto.response.ProductsPageResponse;
 import com.shopit.shopit.domain.product.entity.Product;
 import com.shopit.shopit.domain.product.entity.ProductOption;
 import com.shopit.shopit.domain.product.exception.ProductOptionRequiredException;
 import com.shopit.shopit.domain.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -41,5 +43,9 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
 
         return new CreateProductResponse(savedProduct.getId());
+    }
+
+    public ProductsPageResponse getProducts(Pageable pageable) {
+        return ProductsPageResponse.from(productRepository.findAll(pageable));
     }
 }

@@ -2,7 +2,9 @@ package com.shopit.shopit.domain.product.service;
 
 import com.shopit.shopit.domain.product.dto.request.CreateProductRequest;
 import com.shopit.shopit.domain.product.dto.request.ProductOptionRequest;
+import com.shopit.shopit.domain.product.dto.response.ProductsPageResponse;
 import com.shopit.shopit.domain.product.entity.Product;
+import com.shopit.shopit.domain.product.entity.ProductOption;
 import com.shopit.shopit.domain.product.exception.ProductErrorCode;
 import com.shopit.shopit.domain.product.exception.ProductOptionRequiredException;
 import com.shopit.shopit.domain.product.repository.ProductRepository;
@@ -12,6 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -84,4 +90,51 @@ public class ProductServiceTest {
                 });
         verify(productRepository, never()).save(any());
     }
+
+    @Test
+    void 상품_목록_페이지_조회_성공() {
+        // given
+        Product product = ProductTestFixture.product();
+        Page<Product> page = new PageImpl<>(
+                List.of(product),
+                PageRequest.of(0, 20),
+                1
+        );
+
+        given(productRepository.findAll(any(Pageable.class)))
+                .willReturn(page);
+
+        // when
+        ProductsPageResponse response =
+                productService.getProducts(PageRequest.of(0, 20));
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getProducts()).hasSize(1);
+        assertThat(response.getPageInfo()).isNotNull();
+    }
+
+    public class ProductTestFixture {
+
+        public static Product product() {
+            ProductOption option = ProductOption.create(
+                    new ProductOptionRequest(
+                            "색상",
+                            "BLACK",
+                            10000L,
+                            1,
+                            "imageUrl",
+                            0.0
+                    )
+            );
+            option.addImage("test-image.jpg");
+
+            return Product.create(
+                    "상품명",
+                    "상품 설명",
+                    List.of(option)
+            );
+        }
+    }
+
 }
