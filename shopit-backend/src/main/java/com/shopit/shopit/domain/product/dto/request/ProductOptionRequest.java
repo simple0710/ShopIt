@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class ProductOptionRequest {
-    private String name;
+    private String optionName;
     private String optionValue;
     private Long price;
     private Integer quantity;

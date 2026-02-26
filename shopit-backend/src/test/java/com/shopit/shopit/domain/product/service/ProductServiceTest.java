@@ -2,11 +2,14 @@ package com.shopit.shopit.domain.product.service;
 
 import com.shopit.shopit.domain.product.dto.request.CreateProductRequest;
 import com.shopit.shopit.domain.product.dto.request.ProductOptionRequest;
+import com.shopit.shopit.domain.product.dto.response.ProductDetailResponse;
 import com.shopit.shopit.domain.product.dto.response.ProductsPageResponse;
 import com.shopit.shopit.domain.product.entity.Product;
 import com.shopit.shopit.domain.product.entity.ProductOption;
 import com.shopit.shopit.domain.product.exception.ProductErrorCode;
+import com.shopit.shopit.domain.product.exception.ProductNotFoundException;
 import com.shopit.shopit.domain.product.exception.ProductOptionRequiredException;
+import com.shopit.shopit.domain.product.exception.option.ProductOptionNotFoundException;
 import com.shopit.shopit.domain.product.repository.ProductRepository;
 import com.shopit.shopit.global.common.exception.ServiceException;
 import org.junit.jupiter.api.Test;
@@ -21,13 +24,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -112,6 +115,48 @@ public class ProductServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.getProducts()).hasSize(1);
         assertThat(response.getPageInfo()).isNotNull();
+    }
+
+    @Test
+    void 상품_상세_조회_성공() {
+        // given
+        Long productId = 1L;
+
+        Product product = mock(Product.class);
+        ProductOption option1 = mock(ProductOption.class);
+        ProductOption option2 = mock(ProductOption.class);
+
+        given(productRepository.findById(productId))
+                .willReturn(Optional.of(product));
+
+        given(product.getId()).willReturn(productId);
+        given(product.getName()).willReturn("맥북");
+        given(product.getDescription()).willReturn("M3 Pro");
+        given(product.getProductOptions())
+                .willReturn(List.of(option1, option2));
+
+        // when
+        ProductDetailResponse response =
+                productService.getProductDetail(productId);
+
+        // then
+        assertThat(response.getProductId()).isEqualTo(productId);
+        assertThat(response.getProductName()).isEqualTo("맥북");
+        assertThat(response.getOptions()).hasSize(2);
+    }
+
+    @Test
+    void 상품_상세_조회_실패_상품없음() {
+        // given
+        Long productId = 999L;
+
+        given(productRepository.findById(productId))
+                .willReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() ->
+                productService.getProductDetail(productId))
+                .isInstanceOf(ProductNotFoundException.class);
     }
 
     public class ProductTestFixture {

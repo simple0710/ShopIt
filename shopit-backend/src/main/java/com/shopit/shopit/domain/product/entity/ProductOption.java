@@ -22,10 +22,10 @@ public class ProductOption {
     @Column(name = "product_option_id")
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    @Column(name = "option_name", nullable = false)
+    private String optionName;
 
-    @Column(name = "optionValue")
+    @Column(name = "option_value")
     private String optionValue;
 
     @Column(name = "price", nullable = false)
@@ -71,7 +71,7 @@ public class ProductOption {
 
     public static ProductOption create(ProductOptionRequest dto) {
         ProductOption productOption = new ProductOption();
-        productOption.name = dto.getName();
+        productOption.optionName = dto.getOptionName();
         productOption.optionValue = dto.getOptionValue();
         productOption.price = dto.getPrice();
         productOption.discountRate = dto.getDiscountRate();

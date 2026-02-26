@@ -2,6 +2,8 @@ package com.shopit.shopit.domain.product.controller;
 
 import com.shopit.shopit.domain.product.dto.request.CreateProductRequest;
 import com.shopit.shopit.domain.product.dto.response.CreateProductResponse;
+import com.shopit.shopit.domain.product.dto.response.ProductDetailResponse;
+import com.shopit.shopit.domain.product.dto.response.ProductResponse;
 import com.shopit.shopit.domain.product.dto.response.ProductsPageResponse;
 import com.shopit.shopit.domain.product.service.ProductService;
 import com.shopit.shopit.global.common.ApiResponse;
@@ -35,4 +37,14 @@ public class ProductController {
                 ApiResponse.success(productService.getProducts(pageable))
         );
     }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ApiResponse<ProductDetailResponse>> getProductDetail(
+            @PathVariable Long productId
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(productService.getProductDetail(productId))
+        );
+    }
+
 }

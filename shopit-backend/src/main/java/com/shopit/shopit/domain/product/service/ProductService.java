@@ -2,14 +2,16 @@ package com.shopit.shopit.domain.product.service;
 
 import com.shopit.shopit.domain.product.dto.request.CreateProductRequest;
 import com.shopit.shopit.domain.product.dto.response.CreateProductResponse;
+import com.shopit.shopit.domain.product.dto.response.ProductDetailResponse;
 import com.shopit.shopit.domain.product.dto.response.ProductsPageResponse;
 import com.shopit.shopit.domain.product.entity.Product;
 import com.shopit.shopit.domain.product.entity.ProductOption;
+import com.shopit.shopit.domain.product.exception.ProductNotFoundException;
 import com.shopit.shopit.domain.product.exception.ProductOptionRequiredException;
+import com.shopit.shopit.domain.product.repository.ProductOptionRepository;
 import com.shopit.shopit.domain.product.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductOptionRepository productOptionRepository;
 
     @Transactional
     public CreateProductResponse createProduct(CreateProductRequest request) {
@@ -47,5 +50,15 @@ public class ProductService {
 
     public ProductsPageResponse getProducts(Pageable pageable) {
         return ProductsPageResponse.from(productRepository.findAll(pageable));
+    }
+
+    public ProductDetailResponse getProductDetail(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(ProductNotFoundException::new);
+        List<ProductOption> productOptions = product.getProductOptions();
+
+        return ProductDetailResponse.from(
+                product, productOptions
+        );
     }
 }
