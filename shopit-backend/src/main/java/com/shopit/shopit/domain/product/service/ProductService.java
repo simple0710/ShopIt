@@ -1,6 +1,7 @@
 package com.shopit.shopit.domain.product.service;
 
 import com.shopit.shopit.domain.product.dto.request.CreateProductRequest;
+import com.shopit.shopit.domain.product.dto.request.ProductStatusRequest;
 import com.shopit.shopit.domain.product.dto.response.CreateProductResponse;
 import com.shopit.shopit.domain.product.dto.response.ProductDetailResponse;
 import com.shopit.shopit.domain.product.dto.response.ProductsPageResponse;
@@ -10,8 +11,10 @@ import com.shopit.shopit.domain.product.exception.ProductNotFoundException;
 import com.shopit.shopit.domain.product.exception.ProductOptionRequiredException;
 import com.shopit.shopit.domain.product.repository.ProductOptionRepository;
 import com.shopit.shopit.domain.product.repository.ProductRepository;
+import com.shopit.shopit.type.ProductStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -60,5 +64,17 @@ public class ProductService {
         return ProductDetailResponse.from(
                 product, productOptions
         );
+    }
+
+    @Transactional
+    public void patchProductStatus(Long productId, ProductStatusRequest request) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(ProductNotFoundException::new);
+
+        log.info("변경 전 Product 상태 = {}", product.getStatus().toString());
+
+        product.changeStatus(request.getStatus());
+
+        log.info("변경 후 Product 상태 = {}", product.getStatus().toString());
     }
 }

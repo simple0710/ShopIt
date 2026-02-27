@@ -97,4 +97,8 @@ public class ProductOption {
     void setProduct(Product product) {
         this.product = product;
     }
+
+    public void stop() {
+        this.status = ProductStatus.STOPPED;
+    }
 }

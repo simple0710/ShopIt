@@ -66,4 +66,24 @@ public class Product {
         option.setProduct(this);
         this.productOptions.add(option);
     }
+
+    public void changeStatus(ProductStatus newStatus) {
+
+        if (this.status == newStatus) return;
+
+        validateStatusTransition(newStatus);
+
+        this.status = newStatus;
+
+        if (newStatus == ProductStatus.STOPPED) {
+            this.productOptions.forEach(ProductOption::stop);
+        }
+    }
+
+    private void validateStatusTransition(ProductStatus newStatus) {
+
+//        if (this.status == ProductStatus.SOLD_OUT) {
+//            throw new ProductNotAvailableException();
+//        }
+    }
 }

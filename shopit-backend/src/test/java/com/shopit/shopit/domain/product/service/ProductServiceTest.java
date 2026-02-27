@@ -2,6 +2,7 @@ package com.shopit.shopit.domain.product.service;
 
 import com.shopit.shopit.domain.product.dto.request.CreateProductRequest;
 import com.shopit.shopit.domain.product.dto.request.ProductOptionRequest;
+import com.shopit.shopit.domain.product.dto.request.ProductStatusRequest;
 import com.shopit.shopit.domain.product.dto.response.ProductDetailResponse;
 import com.shopit.shopit.domain.product.dto.response.ProductsPageResponse;
 import com.shopit.shopit.domain.product.entity.Product;
@@ -12,6 +13,7 @@ import com.shopit.shopit.domain.product.exception.ProductOptionRequiredException
 import com.shopit.shopit.domain.product.exception.option.ProductOptionNotFoundException;
 import com.shopit.shopit.domain.product.repository.ProductRepository;
 import com.shopit.shopit.global.common.exception.ServiceException;
+import com.shopit.shopit.type.ProductStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -182,4 +184,113 @@ public class ProductServiceTest {
         }
     }
 
+    @Test
+    void 상품_상태가_정상적으로_변경된다() {
+        // given
+        Long productId = 1L;
+
+        Product product = Product.create("상품", "설명", List.of());
+        ReflectionTestUtils.setField(product, "id", productId);
+
+        given(productRepository.findById(productId))
+                .willReturn(Optional.of(product));
+
+        ProductStatusRequest request =
+                new ProductStatusRequest(ProductStatus.STOPPED);
+
+        // when
+        productService.patchProductStatus(productId, request);
+
+        // then
+        assertThat(product.getStatus()).isEqualTo(ProductStatus.STOPPED);
+        verify(productRepository).findById(productId);
+    }
+
+    @Test
+    void 상품이_STOPPED되면_모든_옵션도_STOPPED된다() {
+        // given
+        Long productId = 1L;
+
+        ProductOption option1 = ProductOption.create(
+                new ProductOptionRequest(
+                        "색상", "BLACK", 1000L, 10, "img1", 0.0
+                )
+        );
+
+        ProductOption option2 = ProductOption.create(
+                new ProductOptionRequest(
+                        "사이즈", "L", 2000L, 5, "img2", 0.0
+                )
+        );
+
+        Product product = Product.create(
+                "상품", "설명", List.of(option1, option2)
+        );
+
+        ReflectionTestUtils.setField(product, "id", productId);
+
+        given(productRepository.findById(productId))
+                .willReturn(Optional.of(product));
+
+        ProductStatusRequest request =
+                new ProductStatusRequest(ProductStatus.STOPPED);
+
+        // when
+        productService.patchProductStatus(productId, request);
+
+        // then
+        assertThat(product.getStatus()).isEqualTo(ProductStatus.STOPPED);
+        assertThat(option1.getStatus()).isEqualTo(ProductStatus.STOPPED);
+        assertThat(option2.getStatus()).isEqualTo(ProductStatus.STOPPED);
+    }
+
+    @Test
+    void 이미_STOPPED인_상품을_STOPPED로_요청하면_변경되지_않는다() {
+        // given
+        Long productId = 1L;
+
+        ProductOption option = ProductOption.create(
+                new ProductOptionRequest(
+                        "색상", "BLACK", 1000L, 10, "img", 0.0
+                )
+        );
+
+        Product product = Product.create(
+                "상품", "설명", List.of(option)
+        );
+
+        product.changeStatus(ProductStatus.STOPPED); // 이미 STOPPED
+
+        ReflectionTestUtils.setField(product, "id", productId);
+
+        given(productRepository.findById(productId))
+                .willReturn(Optional.of(product));
+
+        ProductStatusRequest request =
+                new ProductStatusRequest(ProductStatus.STOPPED);
+
+        // when
+        productService.patchProductStatus(productId, request);
+
+        // then
+        assertThat(product.getStatus()).isEqualTo(ProductStatus.STOPPED);
+        assertThat(option.getStatus()).isEqualTo(ProductStatus.STOPPED);
+    }
+
+    @Test
+    void 상품이_없으면_상태변경에_실패한다() {
+        // given
+        Long productId = 999L;
+
+        given(productRepository.findById(productId))
+                .willReturn(Optional.empty());
+
+        ProductStatusRequest request =
+                new ProductStatusRequest(ProductStatus.STOPPED);
+
+        // when & then
+        assertThatThrownBy(() ->
+                productService.patchProductStatus(productId, request))
+                .isInstanceOf(ProductNotFoundException.class);
+    }
 }

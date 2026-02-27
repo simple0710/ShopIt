@@ -1,12 +1,14 @@
 package com.shopit.shopit.domain.product.controller;
 
 import com.shopit.shopit.domain.product.dto.request.CreateProductRequest;
+import com.shopit.shopit.domain.product.dto.request.ProductStatusRequest;
 import com.shopit.shopit.domain.product.dto.response.CreateProductResponse;
 import com.shopit.shopit.domain.product.dto.response.ProductDetailResponse;
 import com.shopit.shopit.domain.product.dto.response.ProductResponse;
 import com.shopit.shopit.domain.product.dto.response.ProductsPageResponse;
 import com.shopit.shopit.domain.product.service.ProductService;
 import com.shopit.shopit.global.common.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -44,6 +46,19 @@ public class ProductController {
     ) {
         return ResponseEntity.ok(
                 ApiResponse.success(productService.getProductDetail(productId))
+        );
+    }
+
+    @PatchMapping("/{productId}/status")
+    public ResponseEntity<ApiResponse<Object>> patchProductStatus(
+            @PathVariable Long productId,
+            @RequestBody @Valid ProductStatusRequest request
+    ) {
+
+        productService.patchProductStatus(productId, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(null)
         );
     }
 
